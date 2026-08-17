@@ -69,7 +69,10 @@ function CupoCard({ cupo, href }: { cupo: Cupo; href: string }) {
       <Metric label="Cupo disponible" value={formatCOP(disponible)} size="md" />
 
       <div className="flex flex-col gap-3">
-        <ProgressBar ratio={razon} label={`Cupo utilizado de ${cupo.producto}`} />
+        <ProgressBar
+          ratio={razon}
+          label={`Cupo utilizado de ${cupo.producto}`}
+        />
         <div className="flex justify-between text-body-s text-ink-tertiary">
           <span>Utilizado {formatCOPCompact(cupo.utilizado)}</span>
           <span>Aprobado {formatCOPCompact(cupo.autorizado)}</span>
@@ -184,51 +187,68 @@ function CatalogoProductos() {
 function UltimosMovimientos() {
   return (
     <Card as="section" className="flex flex-col gap-5">
-      <CardHeading meta={<Link href="/operaciones">Ver todos</Link>}>
+      <CardHeading
+        meta={
+          <Link href="/operaciones" className="area-tactil">
+            Ver todos
+          </Link>
+        }
+      >
         Últimos movimientos
       </CardHeading>
 
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="border-b border-hairline text-left">
-            {["Fecha", "Concepto", "Contraparte", "Monto"].map((th, i) => (
-              <th
-                key={th}
-                scope="col"
-                className={cn(
-                  "pb-3 text-body-s font-semibold text-ink-tertiary",
-                  i === 3 && "text-right",
-                )}
-              >
-                {th}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {movimientos.map((mov) => (
-            <tr key={mov.id} className="border-b border-hairline last:border-0">
-              <td className="py-4 text-body-m whitespace-nowrap text-ink-secondary tabular-nums">
-                {formatFecha(mov.fecha)}
-              </td>
-              <td className="py-4 text-body-m font-semibold text-ink">
-                {mov.concepto}
-              </td>
-              <td className="py-4 text-body-m text-ink-secondary">
-                {mov.contraparte}
-              </td>
-              <td
-                className={cn(
-                  "py-4 text-right text-body-m font-semibold whitespace-nowrap tabular-nums",
-                  mov.tipo === "abono" ? "text-ink" : "text-ink-secondary",
-                )}
-              >
-                {mov.tipo === "abono" ? "+" : "−"} {formatCOP(mov.monto)}
-              </td>
+      {/* Cinco columnas con concepto y contraparte no caben en 375px. El piso
+          es el desplazamiento, no la compresión: `-mx-6 … px-6` lleva la zona
+          desplazable hasta el filo de la tarjeta, y `min-w-0` es lo que permite
+          que el contenedor se encoja por debajo de su contenido — sin él, un
+          hijo de flex conserva `min-width: auto` y empuja la página entera.
+          Ver la skill responsive-financiero. */}
+      <div className="-mx-6 min-w-0 overflow-x-auto px-6">
+        <table className="w-full min-w-[520px] border-collapse">
+          <thead>
+            <tr className="border-b border-hairline text-left">
+              {["Fecha", "Concepto", "Contraparte", "Monto"].map((th, i) => (
+                <th
+                  key={th}
+                  scope="col"
+                  className={cn(
+                    "pb-3 text-body-s font-semibold text-ink-tertiary",
+                    i === 3 && "text-right",
+                  )}
+                >
+                  {th}
+                </th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {movimientos.map((mov) => (
+              <tr
+                key={mov.id}
+                className="border-b border-hairline last:border-0"
+              >
+                <td className="py-4 text-body-m whitespace-nowrap text-ink-secondary tabular-nums">
+                  {formatFecha(mov.fecha)}
+                </td>
+                <td className="py-4 text-body-m font-semibold text-ink">
+                  {mov.concepto}
+                </td>
+                <td className="py-4 text-body-m text-ink-secondary">
+                  {mov.contraparte}
+                </td>
+                <td
+                  className={cn(
+                    "py-4 text-right text-body-m font-semibold whitespace-nowrap tabular-nums",
+                    mov.tipo === "abono" ? "text-ink" : "text-ink-secondary",
+                  )}
+                >
+                  {mov.tipo === "abono" ? "+" : "−"} {formatCOP(mov.monto)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </Card>
   );
 }

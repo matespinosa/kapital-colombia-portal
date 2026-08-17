@@ -54,7 +54,9 @@ export function Sidebar({
                   href={item.href}
                   aria-current={activo ? "page" : undefined}
                   className={cn(
-                    "group relative isolate flex w-full items-center gap-2 rounded-nav p-2",
+                    // p-2 daba 40px de alto: cuatro por debajo del mínimo táctil, y este es
+                    // el control de navegación principal en móvil.
+                    "group relative isolate flex w-full items-center gap-2 rounded-nav px-2 py-2.5",
                     "text-body-m font-semibold transition-colors duration-150 ease-salida",
                     activo
                       ? "text-ink"

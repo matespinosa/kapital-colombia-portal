@@ -44,7 +44,7 @@ export default function ResumenCobroPage() {
 
         <hr className="border-hairline" />
 
-        <div className="-mx-6 overflow-x-auto px-6 lg:mx-0 lg:px-0">
+        <div className="-mx-6 min-w-0 overflow-x-auto px-6 lg:mx-0 lg:px-0">
           <table className="w-full min-w-[600px] border-collapse">
             <thead>
               <tr className="text-left">

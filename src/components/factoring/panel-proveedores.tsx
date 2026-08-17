@@ -12,7 +12,7 @@ export function PanelProveedores() {
         <h2 className="text-title-s font-semibold text-ink">Proveedores</h2>
         <Link
           href="/factoring/proveedores"
-          className="flex items-center gap-1 text-body-m font-semibold text-ink transition-colors hover:text-ink-secondary"
+          className="area-tactil flex items-center gap-1 text-body-m font-semibold text-ink transition-colors hover:text-ink-secondary"
         >
           Ver todos
           <Icon name="up-right" size={16} />

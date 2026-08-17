@@ -32,7 +32,7 @@ export function DetalleOperacion({ operacion }: { operacion: Operacion }) {
 
   return (
     <div className="px-6 pb-16">
-      <article className="flex flex-col gap-8 rounded-card bg-surface-raised p-10">
+      <article className="flex flex-col gap-8 rounded-card bg-surface-raised p-6 lg:p-10">
         <header className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <h2 className="text-title-l font-semibold text-ink">
@@ -128,16 +128,36 @@ export function DetalleOperacion({ operacion }: { operacion: Operacion }) {
             )}
           </div>
 
-          <div className="-mx-2 overflow-x-auto px-2">
-            <table className="w-full min-w-[720px] border-collapse">
+          {/* La sangría negativa lleva la zona de desplazamiento hasta el filo
+              de la tarjeta en móvil; desde `lg` la tabla ya cabe y no hace falta.
+              Ver la skill responsive-financiero. */}
+          <div className="-mx-6 min-w-0 overflow-x-auto px-6 lg:mx-0 lg:px-0">
+            <table className="w-full min-w-[560px] border-collapse">
               <thead>
+                {/* Prioridad de columnas: cliente y monto a recibir nunca se
+                    van; el número de factura cede en `lg` y el plazo con su
+                    descuento en `xl`. Lo que cede se reubica como segunda línea,
+                    no se pierde. Ver DESIGN.md §5.5 */}
                 <tr className="text-left">
                   <Encabezado>Nombre del cliente</Encabezado>
-                  <Encabezado>No. Factura</Encabezado>
-                  <Encabezado>Financiar</Encabezado>
-                  <Encabezado>Descuento</Encabezado>
+                  <Encabezado className="hidden lg:table-cell">
+                    No. Factura
+                  </Encabezado>
+                  <Encabezado className="hidden xl:table-cell">
+                    Financiar
+                  </Encabezado>
+                  <Encabezado className="hidden xl:table-cell">
+                    Descuento
+                  </Encabezado>
                   <Encabezado>Monto a recibir</Encabezado>
-                  <th scope="col" className="w-10 pb-4">
+                  {/* `relative` no es cosmético. `sr-only` posiciona en
+                      absoluto, y sin un ancestro posicionado su bloque contenedor
+                      es el documento: la celda vive en x=568 dentro de la tabla
+                      desplazada, así que el rótulo aterrizaba en x=568 *de la
+                      página* y estiraba el scroll horizontal de todo el sitio en
+                      móvil. Con `relative` queda contenido en la celda, dentro
+                      del área que ya se desplaza. */}
+                  <th scope="col" className="relative w-10 pb-4">
                     <span className="sr-only">Comprobante</span>
                   </th>
                 </tr>
@@ -152,25 +172,34 @@ export function DetalleOperacion({ operacion }: { operacion: Operacion }) {
                   >
                     <td className="py-3 pr-4 text-body-m text-ink-secondary">
                       {factura.cliente}
+                      <span className="mt-1 block text-body-s whitespace-nowrap text-ink-tertiary tabular-nums lg:hidden">
+                        Factura {factura.numero}
+                      </span>
                     </td>
-                    <td className="py-3 pr-4 text-body-m whitespace-nowrap text-ink-secondary tabular-nums">
+                    <td className="hidden py-3 pr-4 text-body-m whitespace-nowrap text-ink-secondary tabular-nums lg:table-cell">
                       {factura.numero}
                     </td>
-                    <td className="py-3 pr-4 text-body-m whitespace-nowrap text-ink-secondary tabular-nums">
+                    <td className="hidden py-3 pr-4 text-body-m whitespace-nowrap text-ink-secondary tabular-nums xl:table-cell">
                       {factura.diasFinanciar} días
                     </td>
-                    <td className="py-3 pr-4 text-body-m whitespace-nowrap text-ink-secondary tabular-nums">
+                    <td className="hidden py-3 pr-4 text-body-m whitespace-nowrap text-ink-secondary tabular-nums xl:table-cell">
                       {formatCOPExacto(factura.descuento)}
                     </td>
                     <td className="py-3 pr-4 text-body-m font-semibold whitespace-nowrap text-ink tabular-nums">
                       {formatCOPExacto(montoARecibir(factura))}
+                      {/* El descuento es dinero: no se esconde, se reubica bajo
+                          el monto del que se descontó — que además es donde
+                          cobra sentido leerlo. */}
+                      <span className="mt-1 block text-body-s font-normal text-ink-tertiary tabular-nums xl:hidden">
+                        −{formatCOPExacto(factura.descuento)} · {factura.diasFinanciar} días
+                      </span>
                     </td>
                     <td className="py-3 text-right">
                       <button
                         type="button"
                         disabled={!factura.resuelta}
                         aria-label={`Descargar comprobante de la factura ${factura.numero}`}
-                        className="cursor-pointer text-ink-secondary transition-colors hover:text-ink disabled:cursor-not-allowed"
+                        className="area-tactil cursor-pointer text-ink-secondary transition-colors hover:text-ink disabled:cursor-not-allowed"
                       >
                         <Icon name="descargar" size={20} />
                       </button>
@@ -198,10 +227,10 @@ function Dato({
   destacado?: boolean;
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-6">
-      <dt className="text-body-m whitespace-nowrap text-ink-tertiary">
-        {label}
-      </dt>
+    // El rótulo puede romper en dos líneas; la cifra nunca. Con `nowrap` en
+    // ambos lados no hay dónde romper y el renglón desborda en móvil.
+    <div className="flex items-baseline justify-between gap-4 md:gap-6">
+      <dt className="text-body-m text-ink-tertiary">{label}</dt>
       <dd
         className={cn(
           "text-right whitespace-nowrap tabular-nums",
@@ -216,11 +245,20 @@ function Dato({
   );
 }
 
-function Encabezado({ children }: { children: string }) {
+function Encabezado({
+  children,
+  className,
+}: {
+  children: string;
+  className?: string;
+}) {
   return (
     <th
       scope="col"
-      className="pb-4 text-body-m font-normal whitespace-nowrap text-ink-tertiary"
+      className={cn(
+        "pb-4 text-body-m font-normal whitespace-nowrap text-ink-tertiary",
+        className,
+      )}
     >
       {children}
     </th>
@@ -233,9 +271,12 @@ export function ResumenOperacion({ operacion }: { operacion: Operacion }) {
   const insignia = INSIGNIA[operacion.estado];
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4">
+    // La cifra baja a su propio renglón en móvil en lugar de competir por el
+    // ancho con la fecha y la insignia. `items-start` y no `items-center`: al
+    // envolver, centrar deja la cifra flotando a media altura.
+    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
       <div className="flex flex-col gap-1">
-        <span className="flex items-center gap-3">
+        <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <span className="text-body-m font-semibold text-ink">
             {formatFechaLarga(operacion.fechaSolicitud)}
           </span>

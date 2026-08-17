@@ -99,22 +99,35 @@ export function TablaFacturas({
 
   return (
     <section className="flex flex-col gap-5 rounded-card bg-surface-raised p-6">
-      <header className="flex flex-wrap items-center justify-between gap-4">
+      <header className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
         <h2 className="text-title-s font-semibold text-ink">Facturas</h2>
 
-        <div className="flex items-center gap-4 text-body-m font-semibold">
-          <button type="button" className="cursor-pointer text-ink transition-colors hover:text-ink-secondary">
+        {/* Los dos rótulos completos suman ~330px: en 375px caben justos y
+            envuelven mal. Se apilan, con el divisor solo cuando van en fila. El
+            `py-2.5` de móvil no es decorativo — sube el objetivo táctil de 18px
+            a 38px sin separar visualmente los dos enlaces. */}
+        <div className="flex flex-col text-body-m font-semibold sm:flex-row sm:items-center sm:gap-4">
+          <button
+            type="button"
+            className="min-h-11 cursor-pointer text-left text-ink transition-colors hover:text-ink-secondary sm:min-h-0"
+          >
             Cargar facturas manual
           </button>
-          <span aria-hidden className="h-3 w-px bg-hairline" />
-          <button type="button" className="cursor-pointer text-ink transition-colors hover:text-ink-secondary">
+          <span aria-hidden className="hidden h-3 w-px bg-hairline sm:block" />
+          <button
+            type="button"
+            className="min-h-11 cursor-pointer text-left text-ink transition-colors hover:text-ink-secondary sm:min-h-0"
+          >
             Cargar facturas DIAN
           </button>
         </div>
       </header>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-hairline">
-        <nav className="flex flex-wrap items-center gap-6">
+      <div className="flex items-center justify-between gap-4 border-b border-hairline">
+        {/* La franja se desplaza en vez de envolver: con las pestañas en dos
+            renglones el subrayado deslizante salta entre filas y la línea
+            inferior deja de leerse como una sola. Ver la skill. */}
+        <nav className="tira-scroll -mb-px flex items-center gap-6 pb-px">
           {PESTANAS.map((p) => {
             const activa = p.estado === pestana;
 
@@ -127,7 +140,7 @@ export function TablaFacturas({
                 className={cn(
                   // pb-3.5 = pb-3 + los 2px que antes ocupaba `border-b-2`:
                   // el subrayado salió del box del botón, la altura no cambia.
-                  "relative flex cursor-pointer items-center gap-2 pb-3.5 text-body-m transition-colors",
+                  "area-tactil relative flex shrink-0 cursor-pointer items-center gap-2 pb-3.5 text-body-m transition-colors",
                   activa ? "font-semibold text-ink" : "text-ink-secondary hover:text-ink",
                 )}
               >
@@ -165,7 +178,7 @@ export function TablaFacturas({
           type="button"
           onClick={onToggleFiltro}
           aria-expanded={filtroAbierto}
-          className="flex cursor-pointer items-center gap-2 pb-3 text-body-m font-semibold text-ink-secondary transition-colors hover:text-ink"
+          className="area-tactil flex shrink-0 cursor-pointer items-center gap-2 pb-3 text-body-m font-semibold text-ink-secondary transition-colors hover:text-ink"
         >
           {filtroAbierto ? "Cerrar" : "Filtrar"}
           {/* Los dos iconos se relevan girando sobre el mismo punto: el control
@@ -232,17 +245,17 @@ export function TablaFacturas({
 
       {/* overflow-x-auto es el piso: por debajo de ~700px la tabla se desplaza
           en lugar de comprimir las cifras hasta volverlas ilegibles. */}
-      <div className="-mx-6 overflow-x-auto px-6">
-        <table className="w-full min-w-[640px] border-collapse">
+      <div className="-mx-6 min-w-0 overflow-x-auto px-6">
+        <table className="w-full min-w-[360px] border-collapse sm:min-w-[640px]">
           <thead>
             <tr className="text-left">
-              <th scope="col" className="w-10 pb-4">
+              <th scope="col" className="w-10 pr-3 pb-4 align-top">
                 <input
                   type="checkbox"
                   checked={todasMarcadas}
                   onChange={() => setMarcadas(todasMarcadas ? [] : visibles.map((f) => f.id))}
                   aria-label="Seleccionar todas las facturas visibles"
-                  className="size-4 accent-ink"
+                  className="area-tactil mt-0.5 size-4 cursor-pointer accent-ink"
                 />
               </th>
               <Encabezado>Nombre del cliente</Encabezado>
@@ -255,6 +268,7 @@ export function TablaFacturas({
                 Emisión
               </Encabezado>
               <Encabezado
+                className="hidden sm:table-cell"
                 orden={orden.columna === "vencimiento" ? orden.asc : undefined}
                 onClick={() => setOrden({ columna: "vencimiento", asc: orden.columna === "vencimiento" ? !orden.asc : true })}
               >
@@ -394,7 +408,7 @@ function Encabezado({
         <button
           type="button"
           onClick={onClick}
-          className="flex cursor-pointer items-center gap-1.5 transition-colors hover:text-ink-secondary"
+          className="area-tactil flex cursor-pointer items-center gap-1.5 transition-colors hover:text-ink-secondary"
         >
           {contenido}
         </button>
@@ -440,13 +454,20 @@ function Fila({
         marcada ? "bg-surface-muted/60" : "hover:bg-surface/70",
       )}
     >
-      <td className="py-4">
+      {/* `align-top` y no el centrado por defecto: en móvil un nombre de cliente
+          largo ocupa tres líneas y la casilla quedaba flotando a media altura,
+          lejos de la fila que representa. */}
+      <td className="py-4 pr-3 align-top">
         <input
           type="checkbox"
           checked={marcada}
           onChange={onToggle}
           aria-label={`Seleccionar factura de ${factura.cliente}`}
-          className="size-4 accent-ink"
+          // 16px es el tamaño correcto del control en el diseño, pero un
+          // objetivo de 16px en táctil se falla — y fallar aquí significa
+          // marcar la factura de al lado. `area-tactil` amplía la zona
+          // sensible a 44px sin tocar el glifo.
+          className="area-tactil mt-0.5 size-4 cursor-pointer accent-ink"
         />
       </td>
 
@@ -454,6 +475,13 @@ function Fila({
         {factura.cliente}
         <span className="mt-1 block text-body-s whitespace-nowrap text-ink-tertiary tabular-nums lg:hidden">
           {formatNIT(factura.nit)}
+        </span>
+        {/* En 375px, con el vencimiento ocupando columna propia el monto
+            quedaba fuera de pantalla: había que arrastrar la tabla para ver
+            cuánto vale cada factura, que es el dato por el que se entra aquí.
+            El vencimiento baja aquí y el monto sube a primera vista. */}
+        <span className="mt-1 block text-body-s whitespace-nowrap text-ink-tertiary tabular-nums sm:hidden">
+          Vence {formatFecha(factura.vencimiento)}
         </span>
       </td>
 
@@ -465,7 +493,7 @@ function Fila({
         {formatFecha(factura.emision)}
       </td>
 
-      <td className="py-4 pr-4 text-body-m whitespace-nowrap text-ink-secondary tabular-nums">
+      <td className="hidden py-4 pr-4 text-body-m whitespace-nowrap text-ink-secondary tabular-nums sm:table-cell">
         {formatFecha(factura.vencimiento)}
         <span className="mt-1 block text-body-s text-ink-tertiary xl:hidden">
           Emitida {formatFecha(factura.emision)}
@@ -483,7 +511,7 @@ function Fila({
           <Link
             href={`/factoring/operaciones/${factura.operacionId}`}
             aria-label={`Ver la operación de la factura de ${factura.cliente}`}
-            className="inline-block rounded-nav px-2 leading-none text-ink-tertiary transition-[color,transform] duration-150 ease-salida hover:scale-125 hover:text-ink active:scale-105"
+            className="area-tactil inline-block rounded-nav px-2 leading-none text-ink-tertiary transition-[color,transform] duration-150 ease-salida hover:scale-125 hover:text-ink active:scale-105"
           >
             ⋮
           </Link>
@@ -523,19 +551,30 @@ function BarraSeleccion({
       initial="oculto"
       animate="visible"
       exit="saliendo"
-      className="sticky bottom-6 z-10 flex flex-wrap items-center justify-between gap-4 rounded-card bg-overlay px-4 py-3 text-ink-inverse backdrop-blur-[2px]"
+      // En móvil la barra se apila: las tres cifras arriba y las acciones
+      // abajo. Los datos van primero porque el total es lo que se está mirando
+      // para decidir. Ver la skill responsive-financiero.
+      className="sticky bottom-4 z-10 flex flex-col gap-3 rounded-card bg-overlay px-4 py-3 text-ink-inverse backdrop-blur-[2px] sm:bottom-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4"
     >
-      <div className="flex gap-8">
+      {/* Envuelve, no se desplaza. Con `overflow-x-auto` el monto total —que es
+          justo la cifra sobre la que se decide— quedaba cortado al borde de la
+          barra en 375px, y había que arrastrar para leerlo. Al envolver baja a
+          una segunda línea y siempre se lee entero. */}
+      <div className="flex min-w-0 flex-wrap gap-x-5 gap-y-2 sm:gap-8">
         <Dato label="Facturas" valor={facturas.length.toLocaleString("es-CO")} />
         <Dato label="Clientes" valor={clientes.toLocaleString("es-CO")} />
         <Dato label="Monto total" valor={formatCOP(Math.round(totalAnimado))} />
       </div>
 
-      <div className="flex items-center gap-3">
+      {/* "Cobrar" no comparte fila con "Cancelar" en móvil: son la acción que
+          mueve dinero y la que la descarta, y a un pulgar de distancia una se
+          confunde con la otra. */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-3">
         <button
           type="button"
           aria-label="Descargar selección"
-          className="flex size-10 cursor-pointer items-center justify-center rounded-full border border-white/80 transition-[background-color,transform] duration-150 ease-salida hover:bg-white/10 active:scale-95"
+          className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-white/80 transition-[background-color,transform] duration-150 ease-salida hover:bg-white/10 active:scale-95"
         >
           <svg viewBox="0 0 9.21313 9.21313" fill="none" className="size-4">
             <path
@@ -551,16 +590,17 @@ function BarraSeleccion({
         <button
           type="button"
           onClick={onCancelar}
-          className="h-10 cursor-pointer rounded-nav border border-white/80 px-6 text-body-m font-semibold transition-[background-color,transform] duration-150 ease-salida hover:bg-white/10 active:scale-[0.97]"
+          className="h-10 flex-1 cursor-pointer rounded-nav border border-white/80 px-6 text-body-m font-semibold transition-[background-color,transform] duration-150 ease-salida hover:bg-white/10 active:scale-[0.97] sm:flex-none"
         >
           Cancelar
         </button>
+        </div>
 
         {/* La selección viaja en la URL: el flujo de cobro se puede recargar
             y compartir sin perderla. Ver DESIGN.md §5.7 */}
         <Link
           href={`/factoring/cobro?facturas=${facturas.map((f) => f.id).join(",")}`}
-          className="flex h-10 cursor-pointer items-center rounded-nav bg-surface-raised px-6 text-body-m font-semibold text-ink transition-[background-color,transform] duration-150 ease-salida hover:bg-surface-muted active:scale-[0.97]"
+          className="flex h-10 cursor-pointer items-center justify-center rounded-nav bg-surface-raised px-6 text-body-m font-semibold text-ink transition-[background-color,transform] duration-150 ease-salida hover:bg-surface-muted active:scale-[0.97]"
         >
           Cobrar
         </Link>

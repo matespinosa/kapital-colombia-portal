@@ -28,8 +28,12 @@ export default function FactoringPage() {
   return (
     <div className="flex min-h-[calc(100dvh-var(--spacing-header))] items-center">
       {/* Espejo del layout de México: la pieza va a la izquierda y el copy a
-          la derecha. Las medidas salen del nodo 2090:3857. */}
-      <div className="flex w-full items-center gap-[71px] px-6 pb-8">
+          la derecha. Las medidas salen del nodo 2090:3857.
+
+          El gap de 71px es la separación entre la pieza y el copy; como la
+          pieza solo existe desde `xl`, por debajo sería un hueco de 71px sin
+          nada al otro lado. */}
+      <div className="flex w-full items-center gap-8 px-6 pb-8 xl:gap-[71px]">
         <PiezaVisual />
         <Copy estado={estadoFactoring} />
       </div>
@@ -90,13 +94,16 @@ function Copy({ estado }: { estado: EstadoFactoring }) {
   const mensaje = MENSAJES[estado];
 
   return (
-    <div className="flex w-[410px] max-w-full shrink-0 flex-col gap-8">
+    <div className="flex w-full flex-col gap-8 xl:w-[410px] xl:shrink-0">
       <div className="flex flex-col gap-6">
-        <h2 className="text-display-m font-semibold text-balance text-ink">
+        {/* Display M son 40px: en 375px un titular de 40px da renglones de tres
+            palabras. Baja a Display S en móvil, que sigue siendo el titular
+            dominante de la pantalla. */}
+        <h2 className="text-display-s font-semibold text-balance text-ink md:text-display-m">
           {mensaje.titulo}
         </h2>
 
-        <p className="text-title-m text-ink-secondary">
+        <p className="text-body-l text-ink-secondary md:text-title-m">
           <span aria-hidden className="mr-1">
             —
           </span>
@@ -108,7 +115,7 @@ function Copy({ estado }: { estado: EstadoFactoring }) {
         <ButtonLink
           href={mensaje.accion.href}
           icon="up-right"
-          className="self-start"
+          className="w-full justify-center md:w-auto md:self-start"
         >
           {mensaje.accion.label}
         </ButtonLink>

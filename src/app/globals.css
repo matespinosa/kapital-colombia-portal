@@ -38,6 +38,26 @@
   /* Calendario del filtro (sobre fondo oscuro) */
   --figma-ui-02: #454546; /* rango seleccionado */
   --figma-ui-03: #747374; /* días fuera del mes */
+
+  /* -------------------------------------------------------------------------
+     Alto del header.
+
+     86px es la medida del canvas de Figma (1280×832). En 375×812 eso es el 10 %
+     de la pantalla para una barra que solo lleva el hamburguesa, el título y dos
+     iconos — en una app de datos densos ese espacio se necesita para los datos.
+
+     Vive como primitiva y no directamente en el @theme porque de eso depende
+     que `h-header` y los `calc(100dvh - var(--spacing-header))` de las pantallas
+     completas sigan cuadrando entre sí: el alias del @theme apunta aquí, así que
+     una sola línea mueve las dos cosas. Ver la skill responsive-financiero.
+     ------------------------------------------------------------------------- */
+  --altura-header: 64px;
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --altura-header: 86px;
+  }
 }
 
 /* ---------------------------------------------------------------------------
@@ -130,7 +150,7 @@
 
   /* Métricas del Core Base Layout — ver DESIGN.md §3.4 */
   --spacing-sidebar: 220px;
-  --spacing-header: 86px;
+  --spacing-header: var(--altura-header);
   /* Ancho del formulario centrado del flujo de solicitud (`max-w-form`) */
   --container-form: 664px;
 }
@@ -227,6 +247,61 @@
   /* Filas de tabla: solo opacidad, escalonadas con `animation-delay` inline. */
   .animar-aparecer {
     animation: aparecer 240ms var(--ease-salida) both;
+  }
+
+  /* -------------------------------------------------------------------------
+     Tira desplazable en horizontal sin barra visible.
+
+     Para franjas de pestañas: cuatro pestañas con su contador no caben en
+     375px, y dejarlas envolver a dos renglones rompe el subrayado deslizante y
+     la línea inferior. La barra se oculta porque la pestaña cortada al borde ya
+     es la señal de que hay más — es el patrón nativo de iOS y Android.
+
+     Solo para navegación entre vistas. En tablas se usa `overflow-x-auto` con
+     su barra visible: ahí el usuario necesita saber cuánto contenido le falta.
+     ------------------------------------------------------------------------- */
+  .tira-scroll {
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tira-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* -------------------------------------------------------------------------
+     Área táctil de 44px sin agrandar el diseño.
+
+     Los iconos de acción del sistema miden 16–24px. Ese es el tamaño correcto
+     visualmente, pero un objetivo de 16px en una pantalla táctil se falla, y
+     aquí fallar un tap puede significar marcar la factura equivocada. El
+     pseudo-elemento extiende la zona sensible por fuera de la caja: el glifo no
+     cambia de tamaño ni empuja el layout.
+
+     El padre necesita `position: relative` y no puede tener `overflow: hidden`.
+     Ver .claude/skills/responsive-financiero/SKILL.md
+     ------------------------------------------------------------------------- */
+  .area-tactil {
+    position: relative;
+  }
+
+  .area-tactil::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+
+  /* Con puntero fino (ratón) el objetivo ampliado sobra y puede solapar al
+     control vecino, así que solo se activa donde el puntero es grueso. */
+  @media (pointer: fine) {
+    .area-tactil::after {
+      display: none;
+    }
   }
 }
 

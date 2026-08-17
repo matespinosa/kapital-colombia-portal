@@ -38,7 +38,7 @@ export function Header({
               type="button"
               onClick={onAbrirMenu}
               aria-label="Abrir menú de navegación"
-              className="cursor-pointer text-ink transition-colors hover:text-ink-secondary lg:hidden"
+              className="area-tactil cursor-pointer text-ink transition-colors hover:text-ink-secondary lg:hidden"
             >
               <IconoMenu />
             </button>
@@ -84,7 +84,7 @@ function Breadcrumbs({ migajas }: { migajas: Migaja[] }) {
               {migaja.href && !ultima ? (
                 <Link
                   href={migaja.href}
-                  className="text-body-m font-semibold text-ink-tertiary transition-colors hover:text-ink"
+                  className="area-tactil text-body-m font-semibold text-ink-tertiary transition-colors hover:text-ink"
                 >
                   {migaja.label}
                 </Link>
@@ -125,7 +125,7 @@ function HeaderAction({
       type="button"
       aria-label={label}
       className={cn(
-        "cursor-pointer rounded-nav text-ink-secondary",
+        "area-tactil cursor-pointer rounded-nav text-ink-secondary",
         "transition-[color,transform] duration-150 ease-salida",
         "hover:scale-110 hover:text-ink active:scale-95",
       )}

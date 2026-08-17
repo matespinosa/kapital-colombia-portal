@@ -3,7 +3,7 @@
 > Documento vivo. Cada decisión de diseño, token, componente o regla de producto
 > que se acuerde se registra aquí. Es la fuente de verdad entre Figma y el código.
 
-**Última actualización:** 2026-08-16
+**Última actualización:** 2026-08-17
 **Mercado:** Colombia
 **Archivo Figma:** [Core Base Layout](https://www.figma.com/design/HC828onIREdpSpgEcWqN67/Core-Base-Layout)
 **Nodo de referencia:** `2090:3856` — *Solicitud de factoring / Cliente Kapital*
@@ -465,11 +465,19 @@ Jerarquía, de más a menos decisiva:
 |---|---|---|
 | ≥ 1280px | todas | — |
 | 1024–1279px | sin Emisión | *Emitida 10 may 2026* bajo Vencimiento |
-| < 1024px | sin Emisión ni NIT | NIT bajo el nombre del cliente |
-| < 640px | — | `overflow-x-auto` con `min-w-[640px]` |
+| 640–1023px | sin Emisión ni NIT | NIT bajo el nombre del cliente |
+| < 640px | sin Emisión, NIT ni Vencimiento | además *Vence 15 ago 2026* bajo el cliente |
 
 El scroll horizontal queda solo como **piso**, no como estrategia: por debajo de
 ~640px comprimir más volvería ilegibles las cifras.
+
+**Por qué el Vencimiento cede su columna en móvil.** Con las cinco columnas y un
+`min-w` de 640px, en 375px la pantalla llegaba hasta el vencimiento y el **monto
+quedaba fuera de cuadro**: había que arrastrar la tabla para ver cuánto vale cada
+factura, que es el dato por el que se entra a esta pantalla. Con el vencimiento
+reubicado bajo el cliente, el ancho mínimo baja a 360px y el monto entra en la
+primera vista. La regla general: si algo tiene que sobrevivir sin desplazarse,
+es la cifra.
 
 **El shell también cede.** Por debajo de `lg` (1024px) el sidebar de 220px se
 sale de la pantalla y vuelve como panel desde un botón de menú en el header —
@@ -477,6 +485,29 @@ a 480px ocupaba media ventana y dejaba el contenido en una franja inservible.
 Cualquier navegación cierra el panel: en móvil tapa el contenido, así que
 dejarlo abierto escondería el destino. El saludo "Hola, {empresa}" también
 desaparece por debajo de `md`: identifica la sesión, no la tarea.
+
+**El header encoge con la pantalla.** 86px es la medida del canvas de Figma; en
+375×812 es el 10 % de la ventana para una barra con el hamburguesa, el título y
+dos iconos. Por debajo de `lg` baja a 64px. La medida vive en una sola primitiva
+(`--altura-header`), de la que cuelgan tanto `h-header` como los
+`calc(100dvh - var(--spacing-header))` de las pantallas completas — así las dos
+no se pueden desincronizar.
+
+**El progreso de la solicitud no entra en el hamburguesa.** Sin sidebar, el
+indicador de pasos se convierte en una franja `sticky` bajo el header con el
+rótulo del paso actual, "Paso N de 4" y una barra segmentada. Meterlo tras un tap
+convertiría "¿cuánto me falta?" en una tarea; en un trámite de vinculación esa
+pregunta se responde sin pedirla.
+
+**Áreas táctiles.** Toda acción con consecuencia llega a 44px en táctil. Donde el
+glifo es más pequeño que eso —casillas de 16px, iconos de 20px— la utilidad
+`.area-tactil` extiende la zona sensible con un pseudo-elemento, sin agrandar el
+diseño ni empujar el layout, y se desactiva con puntero fino para no solapar
+controles vecinos con el ratón.
+
+> Las reglas completas, los patrones por tipo de componente y el procedimiento de
+> verificación están en `.claude/skills/responsive-financiero/SKILL.md`. Se
+> comprueban con `npm run responsive`, que audita móvil, tablet y escritorio.
 
 ### 5.6 `/factoring/operaciones/[id]` — Detalle de operación
 
@@ -578,6 +609,7 @@ recibe     = monto − comisión − descuento
 | Fuente | `next/font/google` (Onest) | Auto-hospedada, sin CLS, sin request externo. |
 | Formato | `Intl` es-CO | Moneda COP, fechas y NIT nativos, sin dependencias. |
 | Movimiento | **Motion** (`motion/react`) + CSS | Layout compartido (`layoutId`) y salidas coordinadas que CSS no puede hacer; el resto va en CSS. Ver §3.7. |
+| Verificación responsive | **playwright-core** + el Chrome del sistema | `npm run responsive` mide desborde y áreas táctiles en los tres viewports; no descarga navegadores. Ver §5.5. |
 
 **Sin librería de componentes.** El diseño es suficientemente propio como para
 que una librería genérica estorbe más de lo que ayuda.
@@ -613,6 +645,12 @@ src/
 │   ├── use-contador.ts             # Interpolación de cifras — §3.7
 │   └── nav.ts
 └── data/{mock,facturas}.ts         # Datos de ejemplo (reemplazar por API)
+
+scripts/
+└── auditar-responsive.mjs          # `npm run responsive` — ver §5.5
+
+.claude/skills/
+└── responsive-financiero/SKILL.md  # Reglas responsive obligatorias
 ```
 
 ---
@@ -717,3 +755,7 @@ src/
 | 2026-08-16 | Motion para el movimiento, CSS para las entradas | El `initial` de Motion se serializa en el HTML del servidor: una tabla de facturas con variantes llegaría en `opacity: 0` y no se leería una cifra hasta hidratar. CSS corre con la hoja de estilos y siempre termina. Motion se queda con lo que CSS no puede: `layoutId`, salidas coordinadas, gestos. Ver §3.7. |
 | 2026-08-16 | Indicadores activos como nodo compartido | Pestañas, módulo del sidebar y paso de la solicitud usan un único nodo con `layoutId`. El recorrido comunica "cambiaste de vista sobre lo mismo"; apagar y encender no comunica nada. |
 | 2026-08-16 | Cifras animadas solo si son resultado de una acción | El total de la selección se interpola porque el barrido conecta el clic con el efecto. Saldos y cupos no: una cifra en movimiento no se puede leer mientras se mueve. |
+| 2026-08-17 | Todo desarrollo se entrega con su versión responsive | El responsive como fase posterior deja pantallas que solo existen en escritorio. La regla y sus patrones viven en una skill del repo, y `npm run responsive` la hace exigible en vez de aspiracional. |
+| 2026-08-17 | En móvil el Vencimiento cede su columna antes que el Monto | Con las cinco columnas el monto quedaba fuera de la primera vista en 375px. Si algo tiene que verse sin arrastrar, es la cifra. |
+| 2026-08-17 | Alto del header como primitiva responsive | 86px es el 10 % de una pantalla de 812px. Una sola variable mueve `h-header` y los `calc(100dvh - …)`, que si no se desincronizan. |
+| 2026-08-17 | Progreso de la solicitud fuera del menú | Sin sidebar, el progreso pasa a una franja sticky. Detrás de un tap, "¿cuánto me falta?" deja de ser una lectura y pasa a ser una tarea. |

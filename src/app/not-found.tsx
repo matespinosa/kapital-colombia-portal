@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
-import { Header } from "@/components/layout/header";
-import { Sidebar } from "@/components/layout/sidebar";
+import { PortalShell } from "@/components/layout/shell";
 import { EmptyState } from "@/components/ui/empty-state";
 import { empresa } from "@/data/mock";
 
@@ -15,23 +14,26 @@ export const metadata: Metadata = {
  * `(portal)` no envuelve este archivo— para que los módulos del sidebar que
  * todavía no tienen pantalla (FLEX, Tarjeta, Tutoriales) caigan en una página
  * que sigue siendo el portal, con salida a Operaciones.
+ *
+ * Reutiliza `PortalShell` y no monta Sidebar + Header por separado: el sidebar
+ * está fuera de pantalla por debajo de `lg` y necesita el estado del panel para
+ * poder abrirse. Con las piezas sueltas, en móvil esta página quedaba sin
+ * ninguna navegación — justo donde el usuario llega perdido.
  */
 export default function NotFound() {
   return (
-    <div className="min-h-dvh bg-surface">
-      <Sidebar ultimoInicioSesion={empresa.ultimoInicioSesion} />
-
-      <div className="ml-sidebar">
-        <Header razonSocial={empresa.razonSocial} />
-
-        <main className="px-6 pb-16">
-          <EmptyState
-            titulo="Esta sección todavía no está disponible"
-            descripcion="La página que buscas no existe o aún no se ha habilitado para tu empresa. Vuelve a Operaciones para ver tus cupos, tus productos y tus últimos movimientos."
-            cta={{ label: "Ir a Operaciones", href: "/" }}
-          />
-        </main>
+    <PortalShell
+      razonSocial={empresa.razonSocial}
+      ultimoInicioSesion={empresa.ultimoInicioSesion}
+    >
+      {/* `PortalShell` ya aporta el `<main>`: aquí solo va el contenedor. */}
+      <div className="px-6 pb-16">
+        <EmptyState
+          titulo="Esta sección todavía no está disponible"
+          descripcion="La página que buscas no existe o aún no se ha habilitado para tu empresa. Vuelve a Operaciones para ver tus cupos, tus productos y tus últimos movimientos."
+          cta={{ label: "Ir a Operaciones", href: "/" }}
+        />
       </div>
-    </div>
+    </PortalShell>
   );
 }

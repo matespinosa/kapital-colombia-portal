@@ -32,7 +32,7 @@ export default function InformacionFacturasPage() {
         {/* Misma estrategia responsive que el tablero: las columnas
             secundarias no se esconden, bajan a la celda que las
             contextualiza. Ver DESIGN.md §5.5 */}
-        <div className="-mx-6 overflow-x-auto px-6 lg:mx-0 lg:px-0">
+        <div className="-mx-6 min-w-0 overflow-x-auto px-6 lg:mx-0 lg:px-0">
           <table className="w-full min-w-[560px] border-collapse">
             <thead>
               <tr className="text-left">

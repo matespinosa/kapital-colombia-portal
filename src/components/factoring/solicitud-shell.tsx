@@ -24,7 +24,7 @@ export function SolicitudSidebar() {
   const { pasoCompleto } = useSolicitud();
 
   return (
-    <div className="fixed inset-y-0 left-0 z-20 flex w-sidebar flex-col gap-8 bg-surface-raised px-2 py-8">
+    <div className="fixed inset-y-0 left-0 z-20 hidden w-sidebar flex-col gap-8 bg-surface-raised px-2 py-8 lg:flex">
       <Link
         href="/factoring"
         aria-label="Kapital — salir de la solicitud"
@@ -80,6 +80,60 @@ export function SolicitudSidebar() {
 /* -------------------------------------------------------------------------- */
 
 /**
+ * Progreso de la solicitud por debajo de `lg`, donde el sidebar no existe.
+ *
+ * No va dentro del panel del hamburguesa: el progreso es lo que responde
+ * "¿cuánto me falta?" en un trámite de vinculación, y esconderlo tras un tap
+ * convierte esa pregunta en una tarea. Se queda `sticky` bajo el header porque
+ * los formularios de esta pantalla son más largos que la ventana.
+ *
+ * Con cuatro pasos y etiquetas de hasta "Términos y condiciones" no caben los
+ * cuatro rótulos en 375px, así que se muestra el rótulo del paso actual más
+ * "Paso N de 4" y una barra segmentada. El usuario obtiene lo mismo que del
+ * sidebar —dónde está, cuánto queda— en una franja de 56px.
+ * Ver la skill responsive-financiero.
+ */
+function SolicitudProgresoMovil() {
+  const pathname = usePathname();
+  const indice = Math.max(
+    PASOS.findIndex((p) => pathname.endsWith(p.slug)),
+    0,
+  );
+  const actual = PASOS[indice];
+
+  return (
+    <div className="sticky top-header z-10 flex flex-col gap-2.5 bg-surface/80 px-6 pb-4 backdrop-blur-[30px] lg:hidden">
+      <div className="flex items-baseline justify-between gap-3">
+        {/* El rótulo puede romper en dos líneas; el contador nunca. */}
+        <p className="text-body-m font-semibold text-ink">
+          {actual.navegacion}
+        </p>
+        <p className="shrink-0 text-body-s whitespace-nowrap text-ink-tertiary tabular-nums">
+          Paso {indice + 1} de {PASOS.length}
+        </p>
+      </div>
+
+      <ol aria-label="Progreso de la solicitud" className="flex gap-1.5">
+        {PASOS.map((paso, i) => (
+          <li
+            key={paso.slug}
+            aria-current={i === indice ? "step" : undefined}
+            className={cn(
+              "h-1 flex-1 rounded-full transition-colors duration-300 ease-salida",
+              i <= indice ? "bg-ink" : "bg-surface-muted",
+            )}
+          >
+            <span className="sr-only">{paso.navegacion}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+
+/**
  * Marco de cada paso: título a dos tonos, descripción, formulario centrado de
  * 664px y el botón de avance anclado abajo.
  */
@@ -108,7 +162,12 @@ export function Paso({
   if (destino) return null;
 
   return (
-    <div className="flex min-h-[calc(100dvh-var(--spacing-header))] flex-col px-6 pb-10">
+    // El estirado a pantalla completa —que ancla el botón abajo— solo aplica
+    // desde `lg`. En móvil el header y la barra de progreso ya consumen 120px, y
+    // forzar la altura dejaría un hueco vacío entre el formulario y el botón en
+    // los pasos cortos. Ahí el contenido fluye y el botón queda tras el último
+    // campo, que es donde el pulgar lo espera.
+    <div className="flex flex-col px-6 pb-10 lg:min-h-[calc(100dvh-var(--spacing-header))]">
       {/* Cada paso es una ruta propia, así que solo se anima la entrada: en el
           App Router la pantalla anterior ya se desmontó cuando esta monta.
 
@@ -138,12 +197,15 @@ export function Paso({
         </div>
       </div>
 
-      <div className="mx-auto mt-auto flex w-full max-w-form justify-center pt-12">
+      <div className="mx-auto mt-auto flex w-full max-w-form justify-center pt-8 lg:pt-12">
         <Button
           shape="rect"
           onClick={onContinuar}
           disabled={!puedeContinuar}
-          className="w-[220px]"
+          // Ancho completo en móvil: es la única acción de la pantalla, y un
+          // botón de 220px centrado en 375px deja dos franjas muertas a los
+          // lados que no hacen nada.
+          className="w-full md:w-[220px]"
         >
           {etiquetaContinuar}
         </Button>
@@ -164,7 +226,10 @@ export function SolicitudLayout({
   return (
     <div className="min-h-dvh bg-surface">
       <SolicitudSidebar />
-      <div className="ml-sidebar">
+      {/* Sin `onAbrirMenu`: el flujo no tiene navegación de módulos que abrir.
+          Las migas de pan son la única salida, y eso es deliberado — salirse de
+          una solicitud a medias tiene un costo. Ver DESIGN.md §5.3 */}
+      <div className="lg:ml-sidebar">
         <Header
           razonSocial={razonSocial}
           migajas={[
@@ -172,6 +237,7 @@ export function SolicitudLayout({
             { label: "Solicitud" },
           ]}
         />
+        <SolicitudProgresoMovil />
         <main>{children}</main>
       </div>
     </div>

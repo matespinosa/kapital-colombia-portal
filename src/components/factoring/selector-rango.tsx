@@ -152,7 +152,10 @@ function Calendario({
       // El panel crece desde su esquina superior izquierda, que es donde está
       // el botón que lo abrió. Escalar desde el centro lo haría aparecer como
       // una capa suelta en vez de como el despliegue de ese control.
-      className="absolute top-full left-0 z-30 mt-2 w-[328px] origin-top-left rounded-nav bg-ink p-4 text-ink-inverse"
+      // Ancho fluido con tope y no fijo en 328px: dentro del panel de filtros la
+      // columna mide ~327px en móvil, y un panel de 328px desborda la página por
+      // un píxel. Las 7 celdas necesitan 280px, así que abajo no aprieta.
+      className="absolute top-full left-0 z-30 mt-2 w-full max-w-[328px] origin-top-left rounded-nav bg-ink p-4 text-ink-inverse"
     >
       <div className="flex items-center justify-between pb-4">
         <p className="text-body-m font-semibold tabular-nums">
