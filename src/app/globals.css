@@ -1,26 +1,250 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Primitivas — espejo 1:1 de las variables del archivo de Figma.
+   No usar directamente en componentes: usar los alias semánticos del @theme.
+   Ver DESIGN.md §3.1
+   --------------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --figma-bg-01: #ffffff;
+  --figma-bg-02: #f8f8f8;
+  --figma-ui-01: #171618;
+  --figma-ui-07: #f4f4f4;
+  --figma-text-01: #171618;
+  --figma-text-02: #454546;
+  --figma-text-03: #969697;
+  --figma-text-04: #ffffff;
+
+  /* Derivados del set de iconos y divisores del diseño */
+  --figma-icon-inactive: #a2a2a3;
+  --figma-hairline: #e8e8e8;
+
+  /* bg/07 — velo oscuro de las barras flotantes sobre contenido */
+  --figma-bg-07: rgba(21, 21, 21, 0.85);
+
+  /* Dashboard de Factoring activo */
+  --figma-accent-02: #67bc72; /* variación positiva */
+  --figma-ui-05: #d1d0d1;
+  --figma-ui-06: #f0f0f0; /* chip neutro */
+  --figma-dialog-01: #eff4fc; /* chip informativo */
+  --figma-dialog-03: #f1fbf9; /* chip de éxito */
+  --figma-dialog-04: #dcf5ef; /* insignia de operación aprobada */
+  --figma-dialog-05: #fdf3df; /* chip de advertencia */
+
+  /* Gráfica de facturas negociadas */
+  --figma-chart-fill: #8e95ef;
+  --figma-chart-track: #cdd9fe;
+
+  /* Calendario del filtro (sobre fondo oscuro) */
+  --figma-ui-02: #454546; /* rango seleccionado */
+  --figma-ui-03: #747374; /* días fuera del mes */
 }
 
+/* ---------------------------------------------------------------------------
+   Tokens expuestos a Tailwind
+   --------------------------------------------------------------------------- */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Superficies */
+  --color-surface: var(--figma-bg-02);
+  --color-surface-raised: var(--figma-bg-01);
+  --color-surface-muted: var(--figma-ui-07);
+
+  /* Tinta */
+  --color-ink: var(--figma-text-01);
+  --color-ink-secondary: var(--figma-text-02);
+  --color-ink-tertiary: var(--figma-text-03);
+  --color-ink-quaternary: var(--figma-icon-inactive);
+  --color-ink-inverse: var(--figma-text-04);
+
+  /* Líneas */
+  --color-hairline: var(--figma-hairline);
+
+  /* Velos */
+  --color-overlay: var(--figma-bg-07);
+
+  /* Señales y chips de estado */
+  --color-positive: var(--figma-accent-02);
+  --color-info-soft: var(--figma-dialog-01);
+  --color-success-soft: var(--figma-dialog-03);
+  /* Verde de insignia: más saturado que el chip de contador, a propósito —
+     marca el estado de una operación, no una cifra. */
+  --color-badge-success: var(--figma-dialog-04);
+  --color-warning-soft: var(--figma-dialog-05);
+  --color-neutral-soft: var(--figma-ui-06);
+
+  /* Gráfica */
+  --color-chart: var(--figma-chart-fill);
+  --color-chart-track: var(--figma-chart-track);
+
+  /* Calendario sobre fondo oscuro */
+  --color-calendar-range: var(--figma-ui-02);
+  --color-calendar-outside: var(--figma-ui-03);
+
+  /* Tipografía — line-height uniforme 1.25 en todo el sistema */
+  --font-sans: var(--font-onest), "TT Interfaces", ui-sans-serif, system-ui,
+    sans-serif;
+
+  --text-body-s: 0.75rem;
+  --text-body-s--line-height: 1.25;
+  --text-body-s--letter-spacing: 0.5px;
+
+  --text-body-m: 0.875rem;
+  --text-body-m--line-height: 1.25;
+  --text-body-m--letter-spacing: 0.5px;
+
+  --text-body-l: 1rem;
+  --text-body-l--line-height: 1.25;
+  --text-body-l--letter-spacing: 0.5px;
+
+  --text-title-s: 1rem;
+  --text-title-s--line-height: 1.25;
+
+  --text-title-m: 1.25rem;
+  --text-title-m--line-height: 1.25;
+
+  --text-title-l: 1.5rem;
+  --text-title-l--line-height: 1.25;
+
+  --text-display-s: 2rem;
+  --text-display-s--line-height: 1.25;
+
+  --text-display-m: 2.5rem;
+  --text-display-m--line-height: 1.25;
+
+  /* Radios */
+  --radius-nav: 8px;
+  --radius-card: 12px;
+  --radius-card-lg: 16px;
+  --radius-pill: 24px;
+
+  /* ---------------------------------------------------------------------
+     Movimiento — ver DESIGN.md §3.7
+
+     Dos curvas, no más. `salida` es la de casi todo: arranca rápido y frena
+     largo, que es como se lee "esto respondió a lo que hice". `estandar` se
+     reserva para lo que entra y sale (velos, popovers), donde una salida
+     demasiado suave se siente lenta.
+     --------------------------------------------------------------------- */
+  --ease-salida: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-estandar: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Métricas del Core Base Layout — ver DESIGN.md §3.4 */
+  --spacing-sidebar: 220px;
+  --spacing-header: 86px;
+  /* Ancho del formulario centrado del flujo de solicitud (`max-w-form`) */
+  --container-form: 664px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ---------------------------------------------------------------------------
+   TT Interfaces (licencia comercial TypeType).
+   Colocar los .woff2 en public/fonts/ y descomentar. El stack de --font-sans
+   ya la prioriza, así que no requiere ningún cambio de código.
+   --------------------------------------------------------------------------- */
+/*
+@font-face {
+  font-family: "TT Interfaces";
+  src: url("/fonts/TTInterfaces-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "TT Interfaces";
+  src: url("/fonts/TTInterfaces-DemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+*/
+
+@layer base {
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* El diseño no usa sombras: el foco se marca con un anillo de tinta. */
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+    transition: outline-offset 120ms var(--ease-salida);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ---------------------------------------------------------------------------
+   Animaciones de entrada en CSS puro.
+
+   Existen para las piezas que viven en componentes de servidor —barras de
+   cupo, mensajes de error de los campos—. Ahí un `motion.div` obligaría a
+   marcar el archivo como cliente y a enviar el runtime de Motion por una
+   animación de un solo disparo. Todo lo que reaccione a un gesto del usuario
+   sí va con Motion. Ver DESIGN.md §3.7
+   --------------------------------------------------------------------------- */
+@keyframes crecer-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes crecer-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* Sin `transform`: se usa en nodos que Motion anima por layout, y dos fuentes
+   escribiendo la misma propiedad se pisan a media animación. */
+@keyframes aparecer {
+  from {
+    opacity: 0;
+  }
+}
+
+@layer utilities {
+  /* Barras de proporción: crecen desde el origen en lugar de aparecer llenas. */
+  .animar-crecer-x {
+    transform-origin: left;
+    animation: crecer-x 700ms var(--ease-salida) both;
+  }
+
+  /* Barras de la gráfica: se levantan desde el eje. */
+  .animar-crecer-y {
+    transform-origin: bottom;
+    animation: crecer-y 500ms var(--ease-salida) both;
+  }
+
+  /* Texto que se suma al layout: mensajes de error, ayudas contextuales. */
+  .animar-entrada {
+    animation: entrar 200ms var(--ease-salida) both;
+  }
+
+  /* Filas de tabla: solo opacidad, escalonadas con `animation-delay` inline. */
+  .animar-aparecer {
+    animation: aparecer 240ms var(--ease-salida) both;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Movimiento reducido.
+
+   `MotionConfig reducedMotion="user"` cubre los componentes de Motion; esto
+   cubre el resto (transiciones y animaciones CSS). No se pone `none`: a 0.01ms
+   la transición sigue disparando `transitionend`, y hay lógica —propia y de
+   terceros— que espera ese evento. Ver DESIGN.md §3.7
+   --------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
